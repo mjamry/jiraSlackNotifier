@@ -1,0 +1,66 @@
+name: jira-change-notifier-prod
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ''
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: 'Checkout Github Action'
+      uses: actions/checkout@master
+
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1'
+
+    - name: Install dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+  test:
+    runs-on: windows-latest
+    needs: [build]
+    steps:
+    - name: 'Checkout Github Action'
+      uses: actions/checkout@master
+
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1'
+
+    - name: Install dependencies
+      run: dotnet restore 
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+
+  deploy:
+    runs-on: windows-latest
+    needs: [build, test]
+    steps:
+    - name: 'Checkout Github Action'
+      uses: actions/checkout@master
+
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1'
+
+    - name: Publish
+      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/jira-change-notifier
+
+    - name: Deploy
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: jira-change-notifier
+        publish-profile: ${{ secrets.azure_prod_profile }}
+        package: ${{env.DOTNET_ROOT}}/jira-change-notifier
