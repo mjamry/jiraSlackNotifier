@@ -53,7 +53,7 @@ namespace JiraDataProvider
 
             return allProjects
                 .Where(p => _config.SupportedProjectKeys.Contains(p.Key))
-                .Select(p => p.Name)
+                .Select(p => p.Key)
                 .ToList();
         }
 

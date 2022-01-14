@@ -2,6 +2,7 @@ using JiraChangesNotifier.Slack;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -34,7 +35,12 @@ namespace JiraDataProvider
 
             if (changes.Count() > 0)
             {
-                var slackBot = new SlackNotifier(Environment.GetEnvironmentVariable("SlackWebhookUrl"));
+                var projects = Environment.GetEnvironmentVariable("ProjectKeys").Split(',');
+                var webhooks = Environment.GetEnvironmentVariable("ProjectWebhooks").Split(',');
+
+                var projectWebhooks = projects.Zip(webhooks);
+
+                var slackBot = new SlackNotifier(projectWebhooks);
                 slackBot.SendJiraUpdate(changes);
             }
             else

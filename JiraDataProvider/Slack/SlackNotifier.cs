@@ -8,11 +8,15 @@ namespace JiraChangesNotifier.Slack
 {
     public class SlackNotifier
     {
-        private SbmClient _client;
+        Dictionary<string, SbmClient> _clients;
 
-        public SlackNotifier(string webhookUrl)
+        public SlackNotifier(IEnumerable<(string, string)> projectWeebhooks)
         {
-            _client = new SbmClient(webhookUrl);
+            _clients = new Dictionary<string, SbmClient>();
+            foreach(var p in projectWeebhooks)
+            {
+                _clients.Add(p.Item1, new SbmClient(p.Item2));
+            }
         }
 
         public void SendJiraUpdate(Dictionary<string, IEnumerable<IssueDto>> data)
@@ -45,7 +49,7 @@ namespace JiraChangesNotifier.Slack
                         }
 
                         message.AddAttachment(attachment);
-                        _client.Send(message);
+                        _clients[p].Send(message);
                     }
                 }
             }
