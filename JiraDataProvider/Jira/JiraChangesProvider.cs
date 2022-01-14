@@ -18,16 +18,7 @@ namespace JiraDataProvider
 
         public void Connect()
         {
-            //TODO remove for debug only
-            var settings = new JiraRestClientSettings()
-            {
-                EnableRequestTrace = true
-            };
-
-
-            _instance = Jira.CreateRestClient(_config.Url, _config.User, _config.Password, settings);
-
-            _instance.Issues.MaxIssuesPerRequest = 200;
+            _instance = Jira.CreateRestClient(_config.Url, _config.User, _config.Password);
         }
 
         public async Task<Dictionary<string, IEnumerable<IssueDto>>> GetLatestChanges()

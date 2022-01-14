@@ -9,6 +9,8 @@ namespace JiraDataProvider
 {
     public static class JiraChangesFunction
     {
+        const int DefaultTimePeriod = 5;
+
         [FunctionName("JiraChangesFunction")]
         public static async Task Run([TimerTrigger("%TimerInterval%")] TimerInfo myTimer, ILogger log)
         {
@@ -21,7 +23,7 @@ namespace JiraDataProvider
                 User = Environment.GetEnvironmentVariable("User"),
                 Password = Environment.GetEnvironmentVariable("Password"),
                 Url = Environment.GetEnvironmentVariable("Url"),
-                TimePeriodForUpdatesInMinutes = -int.Parse(Environment.GetEnvironmentVariable("TimePeriodForUpdatesInMinutes"))
+                TimePeriodForUpdatesInMinutes = -int.Parse(Environment.GetEnvironmentVariable("TimePeriodForUpdatesInMinutes")) | DefaultTimePeriod,
             };
 
             var provider = new JiraChangesProvider(config);
