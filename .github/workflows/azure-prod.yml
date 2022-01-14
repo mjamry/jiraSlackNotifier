@@ -1,65 +1,66 @@
-name: Build and deploy to PROD
-
-env:
-  AZURE_WEBAPP_NAME: jira-change-notifier    # set this to the name of your Azure Web App
-  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  DOTNET_VERSION: '3.1'                 # set this to the .NET Core version to use
+name: jira-change-notifier-prod
 
 on:
   push:
     branches:
       - master
+    paths:
+      - ''
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+    - name: 'Checkout Github Action'
+      uses: actions/checkout@master
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      
-      - name: Set up dependency caching for faster builds
-        uses: actions/cache@v2
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+    - name: Install dependencies
+      run: dotnet restore
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v2
-        with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+  test:
+    runs-on: windows-latest
+    needs: [build]
+    steps:
+    - name: 'Checkout Github Action'
+      uses: actions/checkout@master
+
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1'
+
+    - name: Install dependencies
+      run: dotnet restore 
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
 
   deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Development'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
+    runs-on: windows-latest
+    needs: [build, test]
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v2
-        with:
-          name: .net-app
+    - name: 'Checkout Github Action'
+      uses: actions/checkout@master
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_PROFILE }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1'
+
+    - name: Publish
+      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/jira-change-notifier
+
+    - name: Deploy
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: jira-change-notifier
+        publish-profile: ${{ secrets.azure_prod_profile }}
+        package: ${{env.DOTNET_ROOT}}/jira-change-notifier
