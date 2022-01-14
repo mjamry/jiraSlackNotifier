@@ -63,7 +63,7 @@ namespace JiraDataProvider
 
             var projectIssues = _instance.Issues.Queryable
                 .Where(i => i.Project == project)
-                .Where(i => i.Updated > (DateTime.Now.AddMinutes(_config.UpdateTimeoutInMinutes)))
+                .Where(i => i.Updated > (DateTime.Now.AddMinutes(_config.TimePeriodForUpdatesInMinutes)))
                 .OrderByDescending(i => i.Updated);
 
             foreach (var i in projectIssues)
@@ -104,7 +104,7 @@ namespace JiraDataProvider
             var comments = await _instance.Issues.GetCommentsAsync(issueKey);
 
             foreach (var c in comments
-              .Where(c => c.CreatedDate > (DateTime.Now.AddMinutes(_config.UpdateTimeoutInMinutes)))
+              .Where(c => c.CreatedDate > (DateTime.Now.AddMinutes(_config.TimePeriodForUpdatesInMinutes)))
               .OrderByDescending(c => c.CreatedDate))
             {
                 output.Add(new ChangeDto()
@@ -125,7 +125,7 @@ namespace JiraDataProvider
             var changes = await _instance.Issues.GetChangeLogsAsync(issueKey);
 
             foreach (var c in changes
-                .Where(c => c.CreatedDate > (DateTime.Now.AddMinutes(_config.UpdateTimeoutInMinutes)))
+                .Where(c => c.CreatedDate > (DateTime.Now.AddMinutes(_config.TimePeriodForUpdatesInMinutes)))
                 .OrderByDescending(c => c.CreatedDate))
             {
                 foreach (var it in c.Items.Where(i => _config.SupportedIssueFields.Any(f => f == i.FieldName)))

@@ -7,6 +7,6 @@
         public string Password { get; set; }
         public string[] SupportedIssueFields { get; set; }
         public string[] SupportedProjectKeys { get; set; }
-        public int UpdateTimeoutInMinutes { get; set; }
+        public int TimePeriodForUpdatesInMinutes { get; set; }
     }
 }

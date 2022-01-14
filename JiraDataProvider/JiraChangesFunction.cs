@@ -21,7 +21,7 @@ namespace JiraDataProvider
                 User = Environment.GetEnvironmentVariable("User"),
                 Password = Environment.GetEnvironmentVariable("Password"),
                 Url = Environment.GetEnvironmentVariable("Url"),
-                UpdateTimeoutInMinutes = -int.Parse(Environment.GetEnvironmentVariable("UpdateTimeoutInMinutes"))
+                TimePeriodForUpdatesInMinutes = -int.Parse(Environment.GetEnvironmentVariable("TimePeriodForUpdatesInMinutes"))
             };
 
             var provider = new JiraChangesProvider(config);
