@@ -20,8 +20,8 @@ namespace JiraDataProvider
 
             var config = new JiraConfig()
             {
-                SupportedIssueFields = Environment.GetEnvironmentVariable("SupportedIssueFields").Split(','),
-                SupportedProjectKeys = Environment.GetEnvironmentVariable("SupportedProjectKeys").Split(','),
+                SupportedIssueFields = Environment.GetEnvironmentVariable("IssueFields").Split(','),
+                SupportedProjectKeys = Environment.GetEnvironmentVariable("ProjectKeys").Split(','),
                 User = Environment.GetEnvironmentVariable("User"),
                 Password = Environment.GetEnvironmentVariable("Password"),
                 Url = Environment.GetEnvironmentVariable("Url"),
