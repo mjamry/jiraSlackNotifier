@@ -1,4 +1,5 @@
 ﻿using Atlassian.Jira;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,13 @@ namespace JiraDataProvider
     public class JiraChangesProvider
     {
         private readonly JiraConfig _config;
+        private readonly ILogger _log;
         private Jira _instance;
 
-        public JiraChangesProvider(JiraConfig config)
+        public JiraChangesProvider(JiraConfig config, ILogger log)
         {
             _config = config;
+            _log = log;
         }
 
         public void Connect()
@@ -57,6 +60,8 @@ namespace JiraDataProvider
                 .Where(i => i.Updated > (DateTime.Now.AddMinutes(_config.TimePeriodForUpdatesInMinutes)))
                 .OrderByDescending(i => i.Updated);
 
+            _log.LogInformation($"Got {projectIssues.Count()} issues for project {project}");
+
             foreach (var i in projectIssues)
             {
                 var issue = new IssueDto()
@@ -84,6 +89,8 @@ namespace JiraDataProvider
                 {
                     output.Add(issue);
                 }
+
+                _log.LogInformation($"Issue {issue.Key} last updated: {issue.Updated}, changes: {issue.Changes}");
             }
 
             return output;

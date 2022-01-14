@@ -26,7 +26,7 @@ namespace JiraDataProvider
                 TimePeriodForUpdatesInMinutes = -int.Parse(Environment.GetEnvironmentVariable("TimePeriodForUpdatesInMinutes")) | DefaultTimePeriod,
             };
 
-            var provider = new JiraChangesProvider(config);
+            var provider = new JiraChangesProvider(config, log);
             provider.Connect();
             var changes = await provider.GetLatestChanges();
 
