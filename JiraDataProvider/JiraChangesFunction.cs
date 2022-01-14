@@ -2,7 +2,6 @@ using JiraChangesNotifier.Slack;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,11 +10,7 @@ namespace JiraDataProvider
     public static class JiraChangesFunction
     {
         [FunctionName("JiraChangesFunction")]
-        public static async Task Run([TimerTrigger("0 */5 * * * *"
-            #if DEBUG
-                , RunOnStartup=true
-            #endif
-            )]TimerInfo myTimer, ILogger log)
+        public static async Task Run([TimerTrigger("%TimerInterval%")] TimerInfo myTimer, ILogger log)
         {
             log.LogInformation($"Start function execution at: {DateTime.Now}");
 
