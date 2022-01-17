@@ -27,7 +27,8 @@ namespace JiraChangesNotifier.Slack
                 {
                     foreach (var i in data[p])
                     {
-                        var message = new Message(i.IsNew ? $"New Issue {i.Key}" : $"Issue update {i.Key}");
+                        var title = $"[ {i.Key} ] " + (i.IsNew ? "New Issue" : "Issue update");
+                        var message = new Message(title);
                         var attachment = new Attachment()
                             .AddField("Poject", p, true)
                             .AddField("Issue", i.Key, true);

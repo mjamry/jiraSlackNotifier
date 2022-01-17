@@ -90,7 +90,8 @@ namespace JiraDataProvider
                     output.Add(issue);
                 }
 
-                _log.LogInformation($"Issue {issue.Key} last updated: {issue.Updated}, changes: {issue.Changes}");
+                _log.LogInformation($"Issue {issue.Key} last updated: {issue.Updated}, " +
+                    $"changes: {changes.Count()}, comments: {comments.Count()}");
             }
 
             return output;
