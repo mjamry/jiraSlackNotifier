@@ -16,6 +16,8 @@ namespace JiraDataProvider
         {
             log.LogInformation($"Start function execution at: {DateTime.Now}");
 
+            //var sett = Environment.GetEnvironmentVariable("Jira");
+
             var config = new JiraConfig()
             {
                 SupportedIssueFields = Environment.GetEnvironmentVariable("IssueFields").Split(','),
@@ -36,8 +38,10 @@ namespace JiraDataProvider
                 var webhooks = Environment.GetEnvironmentVariable("ProjectWebhooks").Split(',');
 
                 var projectWebhooks = projects.Zip(webhooks);
+                var dateTimeFormat = Environment.GetEnvironmentVariable("DateTimeFormat");
 
-                var slackBot = new SlackNotifier(projectWebhooks);
+                var slackConfig = new SlackConfig() { DateTimeFormat = dateTimeFormat, ProjectWeebhooks = projectWebhooks };
+                var slackBot = new SlackNotifier(slackConfig);
                 slackBot.SendJiraUpdate(changes);
             }
             else

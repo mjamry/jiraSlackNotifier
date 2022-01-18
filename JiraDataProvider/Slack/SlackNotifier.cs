@@ -8,12 +8,14 @@ namespace JiraChangesNotifier.Slack
 {
     public class SlackNotifier
     {
+        private readonly SlackConfig _config;
         Dictionary<string, SbmClient> _clients;
 
-        public SlackNotifier(IEnumerable<(string, string)> projectWeebhooks)
+        public SlackNotifier(SlackConfig config)
         {
+            _config = config;
             _clients = new Dictionary<string, SbmClient>();
-            foreach(var p in projectWeebhooks)
+            foreach(var p in _config.ProjectWeebhooks)
             {
                 _clients.Add(p.Item1, new SbmClient(p.Item2));
             }
@@ -37,7 +39,7 @@ namespace JiraChangesNotifier.Slack
                         {
                             attachment
                                 .AddField("Author", i.Reporter, true)
-                                .AddField("Created", i.Updated.ToString(), true)
+                                .AddField("Created", i.Updated.ToString(_config.DateTimeFormat), true)
                                 .AddField("Description", i.Description);
                         }
 
@@ -45,7 +47,7 @@ namespace JiraChangesNotifier.Slack
                         {
                             attachment
                                 .AddField("Author", c.Author, true)
-                                .AddField("Created", c.Created.ToString(), true)
+                                .AddField("Created", c.Created.ToString(_config.DateTimeFormat), true)
                                 .AddField(c.Field, c.Content);
                         }
 
