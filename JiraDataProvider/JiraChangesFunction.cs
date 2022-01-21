@@ -16,8 +16,6 @@ namespace JiraDataProvider
         {
             log.LogInformation($"Start function execution at: {DateTime.Now}");
 
-            //var sett = Environment.GetEnvironmentVariable("Jira");
-
             var config = new JiraConfig()
             {
                 SupportedIssueFields = Environment.GetEnvironmentVariable("IssueFields").Split(','),
@@ -28,8 +26,9 @@ namespace JiraDataProvider
                 TimePeriodForUpdatesInMinutes = -int.Parse(Environment.GetEnvironmentVariable("TimePeriodForUpdatesInMinutes")) | DefaultTimePeriod,
             };
 
-            var provider = new JiraChangesProvider(config, log);
-            provider.Connect();
+            var jiraApi = new JiraApiWrapper(config);
+
+            var provider = new JiraChangesProvider(jiraApi, config, log);
             var changes = await provider.GetLatestChanges();
 
             if (changes.Count() > 0)

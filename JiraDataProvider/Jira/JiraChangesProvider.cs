@@ -11,17 +11,13 @@ namespace JiraDataProvider
     {
         private readonly JiraConfig _config;
         private readonly ILogger _log;
-        private Jira _instance;
+        private IJiraApiWrapper _instance;
 
-        public JiraChangesProvider(JiraConfig config, ILogger log)
+        public JiraChangesProvider(IJiraApiWrapper api, JiraConfig config, ILogger log)
         {
+            _instance = api;
             _config = config;
             _log = log;
-        }
-
-        public void Connect()
-        {
-            _instance = Jira.CreateRestClient(_config.Url, _config.User, _config.Password);
         }
 
         public async Task<Dictionary<string, IEnumerable<IssueDto>>> GetLatestChanges()
@@ -43,7 +39,7 @@ namespace JiraDataProvider
 
         private async Task<IEnumerable<string>> GetProjects()
         {
-            var allProjects = await _instance.Projects.GetProjectsAsync();
+            var allProjects = await _instance.GetProjectsAsync();
 
             return allProjects
                 .Where(p => _config.SupportedProjectKeys.Contains(p.Key))
@@ -55,7 +51,7 @@ namespace JiraDataProvider
         {
             var output = new List<IssueDto>();
 
-            var projectIssues = _instance.Issues.Queryable
+            var projectIssues = _instance.GetIssues()
                 .Where(i => i.Project == project)
                 .Where(i => i.Updated > (DateTime.Now.AddMinutes(_config.TimePeriodForUpdatesInMinutes)))
                 .OrderByDescending(i => i.Updated);
@@ -100,7 +96,7 @@ namespace JiraDataProvider
         private async Task<IEnumerable<ChangeDto>> GetIssueComments(string issueKey)
         {
             var output = new List<ChangeDto>();
-            var comments = await _instance.Issues.GetCommentsAsync(issueKey);
+            var comments = await _instance.GetCommentsAsync(issueKey);
 
             foreach (var c in comments
               .Where(c => c.CreatedDate > (DateTime.Now.AddMinutes(_config.TimePeriodForUpdatesInMinutes)))
@@ -121,7 +117,7 @@ namespace JiraDataProvider
         private async Task<IEnumerable<ChangeDto>> GetIssueChanges(string issueKey)
         {
             var output = new List<ChangeDto>();
-            var changes = await _instance.Issues.GetChangeLogsAsync(issueKey);
+            var changes = await _instance.GetChangeLogsAsync(issueKey);
 
             foreach (var c in changes
                 .Where(c => c.CreatedDate > (DateTime.Now.AddMinutes(_config.TimePeriodForUpdatesInMinutes)))
