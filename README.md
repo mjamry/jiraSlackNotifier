@@ -15,6 +15,7 @@ Here is an examplary setting json (which can be used localy):
     "User": "", // Jira user.
     "Password": "", // Jira password.
     "Url": "", // Jira server Url
+    "DateTimeFormat": "HH:mm dd.MM.yy" //DateTime format displayed in Slack messages
   }
 }
 ```
