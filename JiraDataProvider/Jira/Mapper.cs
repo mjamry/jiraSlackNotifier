@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 namespace JiraChangesNotifier.Jira
 {
-    class Mapper
+    public class Mapper
     {
-
         private IMapper _mapper;
+
         public Mapper()
         {
             var map = new MapperConfiguration(config => {
@@ -25,7 +25,5 @@ namespace JiraChangesNotifier.Jira
         {
             return _mapper.Map<IEnumerable<T>, IEnumerable<K>>(source);
         }
-
-
     }
 }

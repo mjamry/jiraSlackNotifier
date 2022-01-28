@@ -31,7 +31,7 @@ namespace Tests
                 SupportedProjectKeys = new[] { "P1", "P2", "P3", "P4" },
                 TimePeriodForUpdatesInMinutes = -TIME_PERIOD_IN_MINUTES,
             };
-            
+
             _api = Substitute.For<IJiraApiWrapper>();
             _logger = Substitute.For<ILogger>();
 
@@ -41,8 +41,8 @@ namespace Tests
                 new JiraProjectDto(){ Key = "P2" },
                 new JiraProjectDto(){ Key = "P3" },
                 new JiraProjectDto(){ Key = "P4" }
-            }; 
-            
+            };
+
             _issues = new List<JiraIssueDto>()
             {
                 new JiraIssueDto(){ Key = "I1", Project = "P1", Updated = MinutesBeforeNow(1) },
@@ -53,9 +53,9 @@ namespace Tests
 
             _comments = new List<JiraCommentDto>()
             {
-                new JiraCommentDto() { 
-                    Author = "testCommentAuthor", 
-                    Body = "testCommentContent", 
+                new JiraCommentDto() {
+                    Author = "testCommentAuthor",
+                    Body = "testCommentContent",
                     CreatedDate = MinutesBeforeNow(3)
                 }
             };
@@ -88,8 +88,10 @@ namespace Tests
         {
             //given
             var provider = new JiraChangesProvider(_api, _config, _logger);
+            
             //when
             var result = await provider.GetLatestChanges();
+            
             //then
             Assert.AreEqual(4, result.Count);
         }
@@ -99,11 +101,12 @@ namespace Tests
         {
             //given
             var provider = new JiraChangesProvider(_api, _config, _logger);
+            
             //when
             var result = await provider.GetLatestChanges();
-            //then
             
-            foreach(var proj in result)
+            //then
+            foreach (var proj in result)
             {
                 Assert.AreEqual(1, proj.Value.Count());
             }
@@ -121,10 +124,11 @@ namespace Tests
 
             //given
             var provider = new JiraChangesProvider(_api, _config, _logger);
+            
             //when
             var result = await provider.GetLatestChanges();
+            
             //then
-
             Assert.AreEqual(3, result["P1"].First().Changes.Count());
         }
 
@@ -132,7 +136,7 @@ namespace Tests
         public async Task ShouldGetIssuesForAProject_WhenIssueHasSomeOldComments()
         {
             //setup
-            _issues.Add(new JiraIssueDto() { Key = "II1", Project = "P1",  Updated = MinutesBeforeNow(2) });
+            _issues.Add(new JiraIssueDto() { Key = "II1", Project = "P1", Updated = MinutesBeforeNow(2) });
             _comments.Add(new JiraCommentDto() { Author = "testAuthor", CreatedDate = MinutesBeforeNow(3) });
             _comments.Add(new JiraCommentDto() { Author = "testAuthor", CreatedDate = MinutesBeforeNow(6) });
             _comments.Add(new JiraCommentDto() { Author = "testAuthor", CreatedDate = MinutesBeforeNow(7) });
@@ -142,10 +146,11 @@ namespace Tests
 
             //given
             var provider = new JiraChangesProvider(_api, _config, _logger);
+            
             //when
             var result = await provider.GetLatestChanges();
+            
             //then
-
             Assert.AreEqual(3, result["P1"].First().Changes.Count());
         }
 
@@ -162,10 +167,11 @@ namespace Tests
 
             //given
             var provider = new JiraChangesProvider(_api, _config, _logger);
+            
             //when
             var result = await provider.GetLatestChanges();
+            
             //then
-
             Assert.AreEqual(3, result["P1"].Count());
         }
 
@@ -182,10 +188,11 @@ namespace Tests
 
             //given
             var provider = new JiraChangesProvider(_api, _config, _logger);
+            
             //when
             var result = await provider.GetLatestChanges();
+            
             //then
-
             Assert.AreEqual(3, result["P1"].First().Changes.Count());
         }
 
@@ -194,10 +201,10 @@ namespace Tests
         {
             //given
             var provider = new JiraChangesProvider(_api, _config, _logger);
-            
+
             //when
             var result = await provider.GetLatestChanges();
-            
+
             //then
             var resultComment = result["P1"].First().Changes.First();
             Assert.AreEqual("testCommentAuthor", resultComment.Author);
@@ -224,11 +231,15 @@ namespace Tests
         [Test]
         public async Task ShouldGetOnlySupportedProjects()
         {
+            //setup
             _config.SupportedProjectKeys = new[] { "P1", "P2" };
+            
             //given
             var provider = new JiraChangesProvider(_api, _config, _logger);
+            
             //when
             var result = await provider.GetLatestChanges();
+            
             //then
             Assert.AreEqual(2, result.Count);
         }
@@ -288,7 +299,7 @@ namespace Tests
 
             //given
             var provider = new JiraChangesProvider(_api, _config, _logger);
-            
+
             //when
             var result = await provider.GetLatestChanges();
 
@@ -299,8 +310,6 @@ namespace Tests
             Assert.AreEqual("SUPPORTED_FIELD1", changes[1].Field);
             Assert.AreEqual("SUPPORTED_FIELD2", changes[2].Field);
         }
-
-
 
         private DateTime MinutesBeforeNow(int minutes)
         {
