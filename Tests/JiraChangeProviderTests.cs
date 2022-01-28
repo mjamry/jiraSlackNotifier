@@ -236,7 +236,68 @@ namespace Tests
         [Test]
         public async Task ShouldGetOnlySupportedFieldsFromIssues()
         {
-            Assert.Fail();
+            //setup
+            _config.SupportedIssueFields = new[] { "SUPPORTED_FIELD1", "SUPPORTED_FIELD2" };
+            //Three changes but only two have supported fields
+            _changes = new List<JiraChangeLogDto>()
+            {
+                new JiraChangeLogDto() {
+                    Author = new JiraUserDto() { Email = "testChangeEmail" },
+                    Content="testChangeContent",
+                    CreatedDate = MinutesBeforeNow(1),
+                    Items = new List<JiraIssueChangeLogItem>()
+                    {
+                        new JiraIssueChangeLogItem() {
+                            FieldName = "SUPPORTED_FIELD1",
+                            FromValue = "fromValue1",
+                            ToValue = "toValue1"
+                        }
+                    }
+                },
+                new JiraChangeLogDto()
+                {
+                    Author = new JiraUserDto() { Email = "testChangeEmail" },
+                    Content="testChangeContent",
+                    CreatedDate = MinutesBeforeNow(2),
+                    Items = new List<JiraIssueChangeLogItem>()
+                    {
+                        new JiraIssueChangeLogItem() {
+                            FieldName = "SUPPORTED_FIELD2",
+                            FromValue = "fromValue2",
+                            ToValue = "toValue3"
+                        }
+                    }
+                },
+                new JiraChangeLogDto()
+                {
+                    Author = new JiraUserDto() { Email = "testChangeEmail" },
+                    Content="testChangeContent",
+                    CreatedDate = MinutesBeforeNow(3),
+                    Items = new List<JiraIssueChangeLogItem>()
+                    {
+                        new JiraIssueChangeLogItem() {
+                            FieldName = "UNSUPPORDED_FIELD_NAME",
+                            FromValue = "fromValue2",
+                            ToValue = "toValue3"
+                        }
+                    }
+                }
+            };
+
+            _api.GetChangeLogsAsync("I1").Returns(_changes);
+
+            //given
+            var provider = new JiraChangesProvider(_api, _config, _logger);
+            
+            //when
+            var result = await provider.GetLatestChanges();
+
+            //then
+            var changes = result["P1"].First().Changes.ToList();
+            Assert.AreEqual(3, changes.Count());
+            Assert.AreEqual("Comment", changes[0].Field);
+            Assert.AreEqual("SUPPORTED_FIELD1", changes[1].Field);
+            Assert.AreEqual("SUPPORTED_FIELD2", changes[2].Field);
         }
 
 
