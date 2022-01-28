@@ -1,5 +1,5 @@
 ﻿using Atlassian.Jira;
-using Atlassian.Jira.Linq;
+using JiraChangesNotifier.Jira;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,30 +8,36 @@ namespace JiraDataProvider
     public class JiraApiWrapper : IJiraApiWrapper
     {
         private Jira _instance;
+        private Mapper _mapper;
 
         public JiraApiWrapper(JiraConfig config)
         {
             _instance = Jira.CreateRestClient(config.Url, config.User, config.Password);
+            _mapper = new Mapper();
         }
 
-        public async Task<IEnumerable<Project>> GetProjectsAsync()
+        public async Task<IEnumerable<JiraProjectDto>> GetProjectsAsync()
         {
-            return await _instance.Projects.GetProjectsAsync();
+            var jiraResult = await _instance.Projects.GetProjectsAsync();
+            return _mapper.MapCollection<Project, JiraProjectDto>(jiraResult);
         }
 
-        public JiraQueryable<Issue> GetIssues()
+        public IEnumerable<JiraIssueDto> GetIssues()
         {
-            return _instance.Issues.Queryable;
+            var jiraResult = _instance.Issues.Queryable;
+            return _mapper.MapCollection<Issue, JiraIssueDto>(jiraResult);
         }
 
-        public async Task<IEnumerable<Comment>> GetCommentsAsync(string issueKey)
+        public async Task<IEnumerable<JiraCommentDto>> GetCommentsAsync(string issueKey)
         {
-            return await _instance.Issues.GetCommentsAsync(issueKey);
+            var jiraResult = await _instance.Issues.GetCommentsAsync(issueKey);
+            return _mapper.MapCollection<Comment, JiraCommentDto>(jiraResult);
         }
 
-        public async Task<IEnumerable<IssueChangeLog>> GetChangeLogsAsync(string issueKey)
+        public async Task<IEnumerable<JiraChangeLogDto>> GetChangeLogsAsync(string issueKey)
         {
-            return await _instance.Issues.GetChangeLogsAsync(issueKey);
+            var jiraResult = await _instance.Issues.GetChangeLogsAsync(issueKey);
+            return _mapper.MapCollection<IssueChangeLog, JiraChangeLogDto>(jiraResult);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Atlassian.Jira;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,8 +62,8 @@ namespace JiraDataProvider
                 var issue = new IssueDto()
                 {
                     Assignee = i.Assignee,
-                    Updated = i.Updated.Value,
-                    Key = i.Key.Value,
+                    Updated = i.Updated,
+                    Key = i.Key,
                     Reporter = i.Reporter,
                     Description = i.Description
                 };
@@ -76,8 +75,8 @@ namespace JiraDataProvider
                     break;
                 }
 
-                var comments = await GetIssueComments(i.Key.Value);
-                var changes = await GetIssueChanges(i.Key.Value);
+                var comments = await GetIssueComments(i.Key);
+                var changes = await GetIssueChanges(i.Key);
 
                 issue.Changes = comments.Concat(changes);
 
@@ -105,7 +104,7 @@ namespace JiraDataProvider
                 output.Add(new ChangeDto()
                 {
                     Author = c.Author,
-                    Created = c.CreatedDate.Value,
+                    Created = c.CreatedDate,
                     Field = "Comment",
                     Content = c.Body
                 });
