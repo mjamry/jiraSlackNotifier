@@ -1,7 +1,9 @@
+using JiraChangesNotifier.Jira;
 using JiraChangesNotifier.Slack;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,17 +28,19 @@ namespace JiraDataProvider
                 TimePeriodForUpdatesInMinutes = -int.Parse(Environment.GetEnvironmentVariable("TimePeriodForUpdatesInMinutes")) | DefaultTimePeriod,
             };
 
-            var jiraApi = new JiraApiWrapper(config);
-
-            var provider = new JiraChangesProvider(jiraApi, config, log);
-            var changes = await provider.GetLatestChanges();
+            var jiraClient = new JiraClient(config);
+            var changes = new Dictionary<string, IEnumerable<IssueDto>>();
+            foreach(var p in config.SupportedProjectKeys)
+            {
+                var issues = await jiraClient.GetIssuesForProject(p);
+                changes.Add(p, issues);
+            }
 
             if (changes.Count() > 0)
             {
-                var projects = Environment.GetEnvironmentVariable("ProjectKeys").Split(',');
                 var webhooks = Environment.GetEnvironmentVariable("ProjectWebhooks").Split(',');
 
-                var projectWebhooks = projects.Zip(webhooks);
+                var projectWebhooks = config.SupportedProjectKeys.Zip(webhooks);
                 var dateTimeFormat = Environment.GetEnvironmentVariable("DateTimeFormat");
 
                 var slackConfig = new SlackConfig() { DateTimeFormat = dateTimeFormat, ProjectWeebhooks = projectWebhooks };
