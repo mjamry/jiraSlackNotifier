@@ -1,4 +1,5 @@
 ﻿using JiraDataProvider;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -26,15 +27,22 @@ namespace JiraChangesNotifier.Jira
             public static string Priority = "priority";
         }
 
-        private class JiraRequestData
+        private class JiraSearchRequestData
         {
             public string jql { get; set; }
             public string[] fields { get; set; }
             public string[] expand { get; set; }
         }
 
+        private class JiraCommentsRequestData
+        {
+            public string orderBy { get; set; }
+            public string[] expand { get; set; }
+        }
+
         private HttpClient _client;
         private readonly JiraConfig _config;
+        private readonly ILogger _log;
 
         //CONSTS
         private readonly string[] IssueBaseFields = new string[] {
@@ -49,18 +57,19 @@ namespace JiraChangesNotifier.Jira
         };
         private readonly string[] IssueBaseExpand = new string[] { "changelog" };
 
-        public JiraClient(JiraConfig config)
+        public JiraClient(JiraConfig config, ILogger log)
         {
             _client = new HttpClient();
             _client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", "NjQxNTQ3ODQxMzc5Ojn21CmVAYQ7ecjT9RgIE1jYUNJh");
             _config = config;
+            _log = log;
         }
         public async Task<IEnumerable<IssueDto>> GetIssuesForProject(string projectKey)
         {
-            var data = new JiraRequestData()
+            var data = new JiraSearchRequestData()
             {
-                jql = $"project={projectKey} AND updated > -6d",
+                jql = $"project={projectKey} AND updated > -{_config.TimePeriodForUpdatesInMinutes}m",
                 fields = IssueBaseFields,
                 expand = IssueBaseExpand
             };
@@ -72,7 +81,7 @@ namespace JiraChangesNotifier.Jira
                     Encoding.ASCII,
                     "application/json"
             ));
-            //response.EnsureSuccessStatusCode();
+            response.EnsureSuccessStatusCode();
 
             var responseData = await response.Content.ReadAsStringAsync();
 
@@ -81,6 +90,7 @@ namespace JiraChangesNotifier.Jira
             List<IssueDto> issues = new List<IssueDto>();
             foreach (var i in rawIssues)
             {
+                _log.LogDebug($"Issue {i[IssueFields.Key].ToString()}");
                 var created = GetTypedField<DateTime>(i, IssueFields.Created);
                 var updated = GetTypedField<DateTime>(i, IssueFields.Updated);
 
@@ -94,13 +104,12 @@ namespace JiraChangesNotifier.Jira
                     Assignee = GetNamedField(i, IssueFields.Assignee),
                     Status = GetNamedField(i, IssueFields.Status),
                     Type = GetNamedField(i, IssueFields.IssueType),
-                    Changes = GetChanges(i)
+                    Changes = GetFieldsUpdate(i).Concat(GetCommentsUpdate(i))
                 });
             }
             
             return issues;
         }
-
 
         //HELPER
         private string GetNamedField(JToken source, string fieldName)
@@ -113,10 +122,60 @@ namespace JiraChangesNotifier.Jira
             return (T)Convert.ChangeType(source["fields"][fieldName], typeof(T));
         }
 
-        private IEnumerable<ChangeDto> GetChanges(JToken source)
+        private IEnumerable<ChangeDto> GetFieldsUpdate(JToken source)
         {
-            //TODO get changes
-            return Enumerable.Empty<ChangeDto>();
+            var output = new List<ChangeDto>();
+            try
+            {
+                foreach (var history in source["changelog"]["histories"])
+                {
+                    foreach (var change in history["items"])
+                    {
+                        var fieldName = change["field"].ToString();
+                        if (_config.SupportedIssueFields.Any(f => f == fieldName))
+                        {
+
+                            output.Add(new ChangeDto()
+                            {
+                                Author = history["author"]["name"].ToString(),
+                                Created = DateTime.Parse(history["created"].ToString()),
+                                Field = fieldName.ToUpper(),
+                                Content = $"{change["fromString"]} -> {change["toString"]}"
+                            });
+                        }
+                    }
+                }
+            }
+            catch(Exception) { }
+
+            _log.LogDebug($"Fields updated: {output.Count()}");
+            return output;
+        }
+
+        private IEnumerable<ChangeDto> GetCommentsUpdate(JToken source)
+        {
+            var output = new List<ChangeDto>();
+            try 
+            {
+                foreach (var comment in source["field"]["comment"]["comments"])
+                {
+                    var updated = DateTime.Parse(comment["updated"].ToString());
+                    if (updated > DateTime.Now.AddMinutes(_config.TimePeriodForUpdatesInMinutes))
+                    {
+                        output.Add(new ChangeDto()
+                        {
+                            Author = comment["author"]["name"].ToString(),
+                            Created = updated,
+                            Field = "Comment",
+                            Content = comment["body"].ToString()
+                        });
+                    }
+                }
+            }
+            catch (Exception) { }
+
+            _log.LogDebug($"Comments updated: {output.Count()}");
+            return output;
         }
     }
 }
