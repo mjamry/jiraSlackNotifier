@@ -22,8 +22,7 @@ namespace JiraDataProvider
             {
                 SupportedIssueFields = Environment.GetEnvironmentVariable("IssueFields").Split(','),
                 SupportedProjectKeys = Environment.GetEnvironmentVariable("ProjectKeys").Split(','),
-                User = Environment.GetEnvironmentVariable("User"),
-                Password = Environment.GetEnvironmentVariable("Password"),
+                Token = Environment.GetEnvironmentVariable("Token"),
                 Url = Environment.GetEnvironmentVariable("Url"),
                 TimePeriodForUpdatesInMinutes = -int.Parse(Environment.GetEnvironmentVariable("TimePeriodForUpdatesInMinutes")) | DefaultTimePeriod,
             };
