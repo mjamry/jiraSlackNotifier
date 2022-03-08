@@ -25,7 +25,7 @@ namespace JiraDataProvider
                 User = Environment.GetEnvironmentVariable("User"),
                 Password = Environment.GetEnvironmentVariable("Password"),
                 Url = Environment.GetEnvironmentVariable("Url"),
-                TimePeriodForUpdatesInMinutes = int.Parse(Environment.GetEnvironmentVariable("TimePeriodForUpdatesInMinutes")) | DefaultTimePeriod,
+                TimePeriodForUpdatesInMinutes = -int.Parse(Environment.GetEnvironmentVariable("TimePeriodForUpdatesInMinutes")) | DefaultTimePeriod,
             };
 
             var jiraClient = new JiraClient(config, log);

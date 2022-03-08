@@ -25,18 +25,13 @@ namespace JiraChangesNotifier.Jira
             public static string Updated = "updated";
             public static string Created = "created";
             public static string Priority = "priority";
+            public static string Comments = "comment";
         }
 
         private class JiraSearchRequestData
         {
             public string jql { get; set; }
             public string[] fields { get; set; }
-            public string[] expand { get; set; }
-        }
-
-        private class JiraCommentsRequestData
-        {
-            public string orderBy { get; set; }
             public string[] expand { get; set; }
         }
 
@@ -54,6 +49,7 @@ namespace JiraChangesNotifier.Jira
             IssueFields.Priority,
             IssueFields.Status,
             IssueFields.Updated,
+            IssueFields.Comments,
         };
         private readonly string[] IssueBaseExpand = new string[] { "changelog" };
 
@@ -69,7 +65,7 @@ namespace JiraChangesNotifier.Jira
         {
             var data = new JiraSearchRequestData()
             {
-                jql = $"project={projectKey} AND updated > -{_config.TimePeriodForUpdatesInMinutes}m",
+                jql = $"project={projectKey} AND updated > {_config.TimePeriodForUpdatesInMinutes}m",
                 fields = IssueBaseFields,
                 expand = IssueBaseExpand
             };
@@ -90,7 +86,7 @@ namespace JiraChangesNotifier.Jira
             List<IssueDto> issues = new List<IssueDto>();
             foreach (var i in rawIssues)
             {
-                _log.LogDebug($"Issue {i[IssueFields.Key].ToString()}");
+                _log.LogInformation($"Issue {i[IssueFields.Key].ToString()}");
                 var created = GetTypedField<DateTime>(i, IssueFields.Created);
                 var updated = GetTypedField<DateTime>(i, IssueFields.Updated);
 
@@ -148,7 +144,7 @@ namespace JiraChangesNotifier.Jira
             }
             catch(Exception) { }
 
-            _log.LogDebug($"Fields updated: {output.Count()}");
+            _log.LogInformation($"Fields updated: {output.Count()}");
             return output;
         }
 
@@ -157,7 +153,7 @@ namespace JiraChangesNotifier.Jira
             var output = new List<ChangeDto>();
             try 
             {
-                foreach (var comment in source["field"]["comment"]["comments"])
+                foreach (var comment in source["fields"]["comment"]["comments"])
                 {
                     var updated = DateTime.Parse(comment["updated"].ToString());
                     if (updated > DateTime.Now.AddMinutes(_config.TimePeriodForUpdatesInMinutes))
@@ -174,7 +170,7 @@ namespace JiraChangesNotifier.Jira
             }
             catch (Exception) { }
 
-            _log.LogDebug($"Comments updated: {output.Count()}");
+            _log.LogInformation($"Comments updated: {output.Count()}");
             return output;
         }
     }
