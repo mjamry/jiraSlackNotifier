@@ -40,14 +40,17 @@ namespace JiraChangesNotifier.Jira
                         var fieldName = change[JiraResponseFields.Field].ToString();
                         if (_config.SupportedIssueFields.Any(f => f == fieldName))
                         {
-
-                            output.Add(new ChangeDto()
+                            var changeTime = DateTime.Parse(history[JiraResponseFields.Created].ToString());
+                            if(changeTime > DateTime.Now.AddMinutes(_config.TimePeriodForUpdatesInMinutes))
                             {
-                                Author = history[JiraResponseFields.Author][JiraResponseFields.Name].ToString(),
-                                Created = DateTime.Parse(history[JiraResponseFields.Created].ToString()),
-                                Field = fieldName,
-                                Content = $"{change[JiraResponseFields.From]} -> {change[JiraResponseFields.To]}"
-                            });
+                                output.Add(new ChangeDto()
+                                {
+                                    Author = history[JiraResponseFields.Author][JiraResponseFields.Name].ToString(),
+                                    Created = changeTime,
+                                    Field = fieldName,
+                                    Content = $"{change[JiraResponseFields.From]} -> {change[JiraResponseFields.To]}"
+                                });
+                            }
                         }
                     }
                 }
