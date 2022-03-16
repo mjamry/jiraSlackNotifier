@@ -12,8 +12,7 @@ Here is an examplary setting json (which can be used localy):
     "IssueFields": "assignee,status,priority,type", // fields for which you want to have updates. Comments are included by default.
     "ProjectKeys": "projectKey1, projectKey2", // projects keys for you want to have updates. It is useful when you wiltiple projects on the same server.
     "ProjectWebhooks": "webhookUrl1, webhookUrl2", // Slack webhooks for which you want to get updates. Each webhook corresponds to each project.
-    "User": "", // Jira user.
-    "Password": "", // Jira password.
+    "Token": "", // Jira API token
     "Url": "", // Jira server Url
     "DateTimeFormat": "HH:mm dd.MM.yy" //DateTime format displayed in Slack messages
   }
