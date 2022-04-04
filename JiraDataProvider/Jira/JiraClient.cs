@@ -68,20 +68,27 @@ namespace JiraChangesNotifier.Jira
                 _log.LogInformation($"Issue {i[IssueFields.Key]}");
                 var created = _responseHandler.GetTypedField<DateTime>(i, IssueFields.Created);
                 var updated = _responseHandler.GetTypedField<DateTime>(i, IssueFields.Updated);
+                var isNew = created == updated;
+                var changes = isNew 
+                        ? Enumerable.Empty<ChangeDto>() 
+                        : _responseHandler.GetFieldsUpdate(i)
+                        .Concat(_responseHandler.GetCommentsUpdate(i));
 
-                issues.Add(new IssueDto()
+                if(isNew || changes.Count() > 0)
                 {
-                    Key = i[IssueFields.Key].ToString(),
-                    Description = _responseHandler.GetTypedField<string>(i, IssueFields.Description),
-                    Priority = _responseHandler.GetNamedField(i, IssueFields.Priority),
-                    IsNew = created == updated,
-                    Updated = updated,
-                    Assignee = _responseHandler.GetNamedField(i, IssueFields.Assignee),
-                    Status = _responseHandler.GetNamedField(i, IssueFields.Status),
-                    Type = _responseHandler.GetNamedField(i, IssueFields.IssueType),
-                    Changes = _responseHandler.GetFieldsUpdate(i)
-                        .Concat(_responseHandler.GetCommentsUpdate(i))
-                });
+                    issues.Add(new IssueDto()
+                    {
+                        Key = i[IssueFields.Key].ToString(),
+                        Description = _responseHandler.GetTypedField<string>(i, IssueFields.Description),
+                        Priority = _responseHandler.GetNamedField(i, IssueFields.Priority),
+                        IsNew = created == updated,
+                        Updated = updated,
+                        Assignee = _responseHandler.GetNamedField(i, IssueFields.Assignee),
+                        Status = _responseHandler.GetNamedField(i, IssueFields.Status),
+                        Type = _responseHandler.GetNamedField(i, IssueFields.IssueType),
+                        Changes = changes
+                    });
+                }
             }
             
             return issues;
