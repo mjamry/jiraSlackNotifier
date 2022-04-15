@@ -69,6 +69,7 @@ namespace JiraChangesNotifier.Jira
                 var created = _responseHandler.GetTypedField<DateTime>(i, IssueFields.Created);
                 var updated = _responseHandler.GetTypedField<DateTime>(i, IssueFields.Updated);
                 var isNew = created == updated;
+                var key = i[IssueFields.Key].ToString();
                 var changes = isNew 
                         ? Enumerable.Empty<ChangeDto>() 
                         : _responseHandler.GetFieldsUpdate(i)
@@ -78,7 +79,7 @@ namespace JiraChangesNotifier.Jira
                 {
                     issues.Add(new IssueDto()
                     {
-                        Key = i[IssueFields.Key].ToString(),
+                        Key = key,
                         Description = _responseHandler.GetTypedField<string>(i, IssueFields.Description),
                         Priority = _responseHandler.GetNamedField(i, IssueFields.Priority),
                         IsNew = created == updated,
@@ -86,6 +87,7 @@ namespace JiraChangesNotifier.Jira
                         Assignee = _responseHandler.GetNamedField(i, IssueFields.Assignee),
                         Status = _responseHandler.GetNamedField(i, IssueFields.Status),
                         Type = _responseHandler.GetNamedField(i, IssueFields.IssueType),
+                        Url = $"{_config.Url}/browse/{key}",
                         Changes = changes
                     });
                 }
