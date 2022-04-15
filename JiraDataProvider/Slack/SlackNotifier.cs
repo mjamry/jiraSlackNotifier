@@ -33,7 +33,7 @@ namespace JiraChangesNotifier.Slack
                         var message = new Message(title);
                         var attachment = new Attachment()
                             .AddField("Poject", project, true)
-                            .AddField("Issue", issue.Key, true);
+                            .AddField("Issue", $"{new SlackLink(issue.Url, issue.Key)}", true);
 
                         if (issue.IsNew)
                         {

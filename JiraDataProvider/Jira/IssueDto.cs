@@ -22,5 +22,6 @@ namespace JiraDataProvider
         public string Status { get; internal set; }
         public string Type { get; internal set; }
         public IEnumerable<ChangeDto> Changes { get; set; }
+        public string Url { get; set; }
     }
 }
