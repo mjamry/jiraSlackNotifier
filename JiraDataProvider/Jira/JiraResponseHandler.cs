@@ -56,8 +56,6 @@ namespace JiraChangesNotifier.Jira
                 }
             }
             catch (Exception) { }
-
-            _log.LogInformation($"Fields updated: {output.Count()}");
             return output;
         }
 
@@ -82,8 +80,6 @@ namespace JiraChangesNotifier.Jira
                 }
             }
             catch (Exception) { }
-
-            _log.LogInformation($"Comments updated: {output.Count()}");
             return output;
         }
     }
