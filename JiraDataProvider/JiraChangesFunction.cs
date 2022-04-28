@@ -16,8 +16,6 @@ namespace JiraDataProvider
         [FunctionName("JiraChangesFunction")]
         public static async Task Run([TimerTrigger("%TimerInterval%")] TimerInfo myTimer, ILogger log)
         {
-            log.LogInformation($"Start function execution at: {DateTime.Now}");
-
             var config = new JiraConfig()
             {
                 SupportedIssueFields = Environment.GetEnvironmentVariable("IssueFields").Split(','),
@@ -46,12 +44,6 @@ namespace JiraDataProvider
                 var slackBot = new SlackNotifier(slackConfig);
                 slackBot.SendJiraUpdate(changes);
             }
-            else
-            {
-                log.LogInformation("No changes");
-            }
-
-            log.LogInformation($"End function execution at: {DateTime.Now}");
         }
     }
 }

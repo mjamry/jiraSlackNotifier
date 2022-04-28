@@ -65,7 +65,6 @@ namespace JiraChangesNotifier.Jira
             List<IssueDto> issues = new List<IssueDto>();
             foreach (var i in rawIssues)
             {
-                _log.LogInformation($"Issue {i[IssueFields.Key]}");
                 var created = _responseHandler.GetTypedField<DateTime>(i, IssueFields.Created);
                 var updated = _responseHandler.GetTypedField<DateTime>(i, IssueFields.Updated);
                 var isNew = created == updated;
@@ -75,7 +74,9 @@ namespace JiraChangesNotifier.Jira
                         : _responseHandler.GetFieldsUpdate(i)
                         .Concat(_responseHandler.GetCommentsUpdate(i));
 
-                if(isNew || changes.Count() > 0)
+                _log.LogInformation(isNew ? $"New issue {key}" : $"Updated issue {key} with {changes.Count()} changes");
+
+                if (isNew || changes.Count() > 0)
                 {
                     issues.Add(new IssueDto()
                     {
